@@ -1,17 +1,78 @@
 package appewtc.masterung.helloioioited;
 
-import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.view.Menu;
 import android.view.MenuItem;
+import android.widget.Toast;
+import android.widget.ToggleButton;
 
-public class MainActivity extends AppCompatActivity {
+import ioio.lib.api.DigitalOutput;
+import ioio.lib.api.exception.ConnectionLostException;
+import ioio.lib.util.BaseIOIOLooper;
+import ioio.lib.util.IOIOLooper;
+import ioio.lib.util.android.IOIOActivity;
+
+public class MainActivity extends IOIOActivity {
+
+    //Explicit
+    private ToggleButton myToggleButton;
+
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
+
+        //Initial Widget
+        myToggleButton = (ToggleButton) findViewById(R.id.toggleButton);
+
+    }   // onCreate
+
+    class Looper extends BaseIOIOLooper {
+
+        //Explicit
+        private DigitalOutput LED0;
+
+        @Override
+        protected void setup() throws ConnectionLostException, InterruptedException {
+            //super.setup();
+
+            LED0 = ioio_.openDigitalOutput(0, true);
+
+            //Check Board Connected ?
+            runOnUiThread(new Runnable() {
+                @Override
+                public void run() {
+                    Toast.makeText(MainActivity.this, "Connected IOIO OK", Toast.LENGTH_SHORT).show();
+                }
+            });
+
+
+        }   // setup
+
+        @Override
+        public void loop() throws ConnectionLostException, InterruptedException {
+            //super.loop();
+
+            LED0.write(myToggleButton.isChecked());
+
+            try {
+                Thread.sleep(100);
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
+
+
+        }   // loop
+
+    }   // Looper Class
+
+    protected IOIOLooper createIOIOLooper() {
+
+        return new Looper();
     }
+
+
 
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
@@ -34,4 +95,4 @@ public class MainActivity extends AppCompatActivity {
 
         return super.onOptionsItemSelected(item);
     }
-}
+}   // Main Class
